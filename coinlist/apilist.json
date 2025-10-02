@@ -1,0 +1,40 @@
+{
+  "بازار داخلی": {
+    "Gold18": {
+      "symbol": "137121",
+      "name": "طلا 18 عیار",
+      "api": "tgju",
+      "img": "Gold.png"
+    }
+  },
+  "ارز دیجیتال": {
+    "USDT": {
+      "symbol": "USDTIRT",
+      "name": "تتر",
+      "api": "nobitex",
+      "img": "USDT.png"
+    },
+    "XRP": {
+      "symbol": "XRPIRT",
+      "name": "ریپل",
+      "api": "nobitex",
+      "img": "XRP.png"
+    },
+    "BTC": {
+      "symbol": "BTCIRT",
+      "name": "بیت‌کوین",
+      "api": "nobitex",
+      "img": "BTC.png"
+    }
+  },
+  "بازار ارز": {
+    "ارز ازاد": {
+      "usd": {
+        "symbol": "137203",
+        "name": "USD dollar",
+        "api": "tgju",
+        "img": "USD.png"
+      }
+    }
+  }
+}
