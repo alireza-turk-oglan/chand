@@ -24,6 +24,7 @@ dependencies:
   workmanager: ^0.9.0+3
   foundation: ^0.0.5
   flutter_launcher_icons: ^0.14.4
+  shamsi_date: ^1.1.1
 
 dev_dependencies:
   flutter_lints: ^2.0.1

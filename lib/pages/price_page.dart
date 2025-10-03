@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shamsi_date/shamsi_date.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/price_item.dart';
@@ -35,7 +36,7 @@ class _PricePageState extends State<PricePage> {
     final prefs = await SharedPreferences.getInstance();
     selectedCoins = prefs.getStringList("selected_coins") ?? ["USDTIRT"];
 
-    final url = Uri.parse("https://raw.githubusercontent.com/alireza-turk-oglan/Price-list/refs/heads/main/coinlist/apilist.json");
+    final url = Uri.parse("https://raw.githubusercontent.com/alireza-turk-oglan/chand/refs/heads/main/coinlist/apilist.json");
     final response = await http.get(url);
     if (response.statusCode == 200) {
       allCoins = jsonDecode(response.body) as Map<String, dynamic>;
@@ -53,24 +54,31 @@ class _PricePageState extends State<PricePage> {
 
   Future<void> fetchPrices() async {
     final List<PriceItem> newItems = [];
+    Map<String, dynamic>? findCoin(Map<String, dynamic> map, String symbol) {
+      for (final entry in map.entries) {
+        final value = entry.value;
+        if (value is Map<String, dynamic>) {
+          if (value.containsKey("symbol") && (value["symbol"] == symbol || entry.key == symbol)) {
+            return value;
+          } else {
+            final result = findCoin(value, symbol);
+            if (result != null) return result;
+          }
+        }
+      }
+      return null;
+    }
 
     for (final symbol in selectedCoins) {
       String displayName = symbol;
       String? img;
       String? api;
 
-      outerLoop:
-      for (final category in allCoins.keys) {
-        final coins = allCoins[category] as Map<String, dynamic>;
-        for (final entry in coins.entries) {
-          final coin = entry.value as Map<String, dynamic>;
-          if (coin["symbol"] == symbol || entry.key == symbol) {
-            displayName = coin["name"] ?? symbol;
-            img = coin["img"];
-            api = coin["api"];
-            break outerLoop;
-          }
-        }
+      final coin = findCoin(allCoins, symbol);
+      if (coin != null) {
+        displayName = coin["name"] ?? symbol;
+        img = coin["img"];
+        api = coin["api"];
       }
 
       String? price;
@@ -80,7 +88,7 @@ class _PricePageState extends State<PricePage> {
         price = await ApiService.getItemPrice(symbol);
       }
 
-      final iconUrl = "https://raw.githubusercontent.com/alireza-turk-oglan/Price-list/refs/heads/main/coinlist/$img";
+      final iconUrl = "https://raw.githubusercontent.com/alireza-turk-oglan/chand/refs/heads/main/coinlist/$img";
 
       newItems.add(PriceItem(
         title: displayName,
@@ -94,30 +102,33 @@ class _PricePageState extends State<PricePage> {
     setState(() => items = newItems);
   }
 
+
   void showBlurPopup(PriceItem item) {
     final isGold = item.symbol == "GOLD";
-
     showDialog(
       context: context,
       barrierColor: Colors.black.withAlpha((0.3 * 255).round()),
       builder: (dialogContext) => BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
         child: AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
           title: Text(item.title, textAlign: TextAlign.center),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.network(
-                item.iconAsset,
-                width: 60,
-                height: 60,
-                errorBuilder: (_, __, ___) => Image.asset("assets/images/default.png", width: 60, height: 60),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(30),
+                child: Image.network(item.iconAsset,width: 60,height: 60,fit: BoxFit.cover,errorBuilder: (_, __, ___) => ClipRRect(borderRadius: BorderRadius.circular(30),
+                    child: Image.asset("assets/images/default.png",width: 60,height: 60,fit: BoxFit.cover)
+                  ),
+                ),
               ),
               const SizedBox(height: 12),
-              Text(item.price, style: const TextStyle(fontSize: 20, color: Colors.green)),
+              Text(item.price,style: const TextStyle(fontSize: 20, color: Colors.green)),
+              const Padding(padding: EdgeInsets.only(top: 12),child: Text("Powered by Alireza", style: TextStyle(fontSize: 15, color: Colors.black54))),
             ],
           ),
+          actionsAlignment: MainAxisAlignment.start,
           actions: [
             if (!isGold)
               TextButton(
@@ -127,15 +138,13 @@ class _PricePageState extends State<PricePage> {
                     await saveUserCoins();
                     await fetchPrices();
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text("حداقل یک آیتم باید وجود داشته باشد")),
-                    );
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("حداقل یک آیتم باید وجود داشته باشد")));
                   }
                   if (dialogContext.mounted) {
                     Navigator.of(dialogContext).pop();
                   }
                 },
-                child: const Text("حذف", style: TextStyle(color: Colors.red)),
+                child: const Text("Delete", style: TextStyle(color: Colors.red)),
               ),
           ],
         ),
@@ -166,6 +175,11 @@ class _PricePageState extends State<PricePage> {
 
   @override
   Widget build(BuildContext context) {
+    final now = DateTime.now();
+    final jNow = now.toJalali();
+    final formatter = jNow.formatter;
+    final dateTimeText = "${formatter.yyyy}/${formatter.mm}/${formatter.dd} - ""${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
+
     if (loadingCoins) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
@@ -173,16 +187,16 @@ class _PricePageState extends State<PricePage> {
     }
 
     return Scaffold(
-      appBar: PriceHeader(onAddCoin: showAddCoinDialog),
+      appBar: PriceHeader(onAddCoin: showAddCoinDialog, dateTimeText: dateTimeText),
       body: RefreshIndicator(
-        onRefresh: fetchPrices,
+        onRefresh: () async {
+          await fetchPrices();
+          setState(() {});
+        },
         child: Column(
           children: [
             Expanded(
-              child: PriceGrid(
-                items: items,
-                onLongPress: showBlurPopup,
-                onReorder: (oldIndex, newIndex) {
+              child: PriceGrid(items: items,onLongPress: showBlurPopup,onReorder: (oldIndex, newIndex) {
                   setState(() {
                     final item = items.removeAt(oldIndex);
                     items.insert(newIndex, item);

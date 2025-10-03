@@ -4,7 +4,7 @@
       "symbol": "137121",
       "name": "طلا 18 عیار",
       "api": "tgju",
-      "img": "Gold.png"
+      "img": "Symbolsicon/Gold.png"
     }
   },
   "ارز دیجیتال": {
@@ -12,28 +12,28 @@
       "symbol": "USDTIRT",
       "name": "تتر",
       "api": "nobitex",
-      "img": "USDT.png"
+      "img": "Symbolsicon/USDT.png"
     },
     "XRP": {
       "symbol": "XRPIRT",
       "name": "ریپل",
       "api": "nobitex",
-      "img": "XRP.png"
+      "img": "Symbolsicon/XRP.png"
     },
     "BTC": {
       "symbol": "BTCIRT",
       "name": "بیت‌کوین",
       "api": "nobitex",
-      "img": "BTC.png"
+      "img": "Symbolsicon/BTC.png"
     }
   },
   "بازار ارز": {
     "ارز ازاد": {
       "usd": {
         "symbol": "137203",
-        "name": "USD dollar",
+        "name": "USD دلار",
         "api": "tgju",
-        "img": "USD.png"
+        "img": "Symbolsicon/USD.png"
       }
     }
   }

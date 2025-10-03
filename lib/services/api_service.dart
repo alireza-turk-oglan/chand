@@ -17,8 +17,7 @@ class ApiService {
       double? price;
 
       if (indicator.containsKey('p_irr')) {
-        price =
-            double.tryParse(indicator['p_irr'].toString().replaceAll(',', ''));
+        price = double.tryParse(indicator['p_irr'].toString().replaceAll(',', ''));
       } else if (indicator.containsKey('p')) {
         price = double.tryParse(indicator['p'].toString().replaceAll(',', ''));
       }

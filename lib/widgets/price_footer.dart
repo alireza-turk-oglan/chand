@@ -5,14 +5,6 @@ class PriceFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.all(8.0),
-      child: Center(
-        child: Text(
-          "Powered by Alireza",
-          style: TextStyle(fontSize: 16),
-        ),
-      ),
-    );
+    return const Padding(padding: EdgeInsets.all(8.0),child: Center(child: Text("Powered by Alireza",style: TextStyle(fontSize: 16))));
   }
 }

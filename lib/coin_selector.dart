@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:logger/logger.dart';
 
-var logger = Logger();
+
 
 class CoinSelector extends StatefulWidget {
   final Map<String, dynamic> allData;
@@ -28,7 +27,6 @@ class _CoinSelectorState extends State<CoinSelector> {
   void initState() {
     super.initState();
     tempSelected = List.from(widget.selectedCoins);
-    logger.i("Init CoinSelector with selectedCoins : ${widget.selectedCoins}");
   }
 
   dynamic getCurrentData() {
@@ -68,11 +66,10 @@ class _CoinSelectorState extends State<CoinSelector> {
         children: [
           TextField(
             decoration: const InputDecoration(
-              labelText: "جستجو...",
+              labelText: "Search...",
               prefixIcon: Icon(Icons.search),
             ),
             onChanged: (value) {
-              logger.i("Search changed: $value");
               setState(() => search = value);
             },
           ),
@@ -83,7 +80,6 @@ class _CoinSelectorState extends State<CoinSelector> {
               itemBuilder: (context, index) {
                 final entry = filtered[index];
                 if (isCoinNode(entry.value)) {
-                  // کوین
                   final symbol = entry.value["symbol"].toString();
                   final name = entry.value["name"] ?? entry.key;
                   final isSelected = tempSelected.contains(symbol);
@@ -91,57 +87,18 @@ class _CoinSelectorState extends State<CoinSelector> {
 
                   return ListTile(
                     leading: Image.network(
-                      "https://raw.githubusercontent.com/alireza-turk-oglan/Price-list/refs/heads/main/coinlist/${entry.value["img"]}",
-                      width: 30,
-                      height: 30,
+                      "https://raw.githubusercontent.com/alireza-turk-oglan/chand/refs/heads/main/coinlist/${entry.value["img"]}", width: 30, height: 30,
                       errorBuilder: (_, __, ___) => const Icon(Icons.image_not_supported, size: 30),
                     ),
-                    title: Text(
-                      name,
-                      style: alreadySelected ? const TextStyle(color: Colors.grey) : null,
-                    ),
-                    trailing: Checkbox(
-                      value: isSelected,
-                      onChanged: alreadySelected
-                          ? null
-                          : (val) {
-                              logger.i("Checkbox changed : $symbol -> $val");
-                              setState(() {
-                                if (val == true) {
-                                  tempSelected.add(symbol);
-                                } else {
-                                  tempSelected.remove(symbol);
-                                }
-                              });
-                            },
-                    ),
-                    onTap: alreadySelected
-                        ? null
-                        : () {
-                            logger.i("Tile tapped : $symbol");
-                            setState(() {
-                              if (isSelected) {
-                                tempSelected.remove(symbol);
-                              } else {
-                                tempSelected.add(symbol);
-                              }
-                            });
-                          },
+                    title: Text(name,style: alreadySelected ? const TextStyle(color: Colors.grey) : null),
+                    trailing: Checkbox(value: isSelected,onChanged: alreadySelected ? null : (val) {setState(() {if (val == true) {tempSelected.add(symbol);} else {tempSelected.remove(symbol);}});}),
+                    onTap: alreadySelected? null : () {setState(() {if (isSelected) {tempSelected.remove(symbol);} else {tempSelected.add(symbol);}});}
                   );
                 } else {
                   // زیردسته
                   return ListTile(
-                    title: Text(
-                      entry.key,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    trailing: const Icon(Icons.arrow_forward),
-                    onTap: () {
-                      logger.i("Navigate into category : ${entry.key}");
-                      setState(() {
-                        navigationStack.add(entry.key);
-                      });
-                    },
+                    title: Text(entry.key,style: const TextStyle(fontWeight: FontWeight.bold)),
+                    trailing: const Icon(Icons.arrow_forward), onTap: () {setState(() {navigationStack.add(entry.key);});},
                   );
                 }
               },
@@ -156,28 +113,17 @@ class _CoinSelectorState extends State<CoinSelector> {
     return PopScope(
       canPop: navigationStack.isEmpty,
       onPopInvokedWithResult: (result, didPop) async {
-        logger.i("Pop invoked, didPop: $didPop , stack: $navigationStack");
-
         if ((didPop ?? false) == false && navigationStack.isNotEmpty) {
           setState(() {
             navigationStack.removeLast();
           });
-          logger.i("Back to parent category");
         }
       },
       child: AlertDialog(
         title: Row(
           children: [
             if (navigationStack.isNotEmpty)
-              IconButton(
-                icon: const Icon(Icons.arrow_back),
-                onPressed: () {
-                  logger.i("Back button pressed");
-                  setState(() {
-                    navigationStack.removeLast();
-                  });
-                },
-              ),
+              IconButton(icon: const Icon(Icons.arrow_back), onPressed: () {setState(() {navigationStack.removeLast();});}),
             Text(navigationStack.isEmpty ? "انتخاب دسته‌بندی" : navigationStack.last),
           ],
         ),
@@ -185,7 +131,6 @@ class _CoinSelectorState extends State<CoinSelector> {
         actions: [
           TextButton(
             onPressed: () {
-              logger.i("Confirm pressed, selectedCoins: $tempSelected");
               widget.onConfirm(tempSelected);
               Navigator.of(context).pop();
             },
